@@ -25,6 +25,7 @@ class Bot {
     " YOU WERE " -> " I_ WAS_ ",
     " YOU'RE " -> " I'M_ ",
     " YOU'VE " -> " I'VE_ ",
+    " YOUR " -> " MY_ ",
     " I'VE " -> " YOU'VE_ ",
     " I WASN'T " -> " YOU_ WEREN'T_ ",
     " I WAS NOT " -> " YOU_ WEREN'T_ ",
