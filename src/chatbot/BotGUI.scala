@@ -38,7 +38,7 @@ object BotGUI extends SimpleSwingApplication {
 
   // Tällä metodilla voi tallentaa dialogin haluamaansa paikkaan tietokoneella. Nimen perään
   // pitää kuitenkin laittaa ".txt"
-  def save = {
+  def save() = {
     val organizedText = output.text.split("\n")
     val chooser = new FileChooser
     if (chooser.showSaveDialog(null) == FileChooser.Result.Approve) {
@@ -56,14 +56,14 @@ object BotGUI extends SimpleSwingApplication {
   top.menuBar = new MenuBar {
     contents += new Menu("Program") {
       val quitAction = Action("Quit") { top.dispose() }
-      val saveAction = Action("Save") { save }
+      val saveAction = Action("Save") { save() }
       contents += new MenuItem(saveAction)
       contents += new MenuItem(quitAction)
     }
   }
 
   val label = new Label {
-    val image = this.getClass().getClassLoader().getResource("talking.jpg")
+    val image = this.getClass.getClassLoader.getResource("talking.jpg")
     icon = new ImageIcon(image)
   }
 
@@ -96,7 +96,7 @@ object BotGUI extends SimpleSwingApplication {
 
   // "Lähettää" käyttäjän inputin. Toisin sanoen vaihtaa edellisen inputin, etsii vastauksen
   // ja näyttää sen. Samalla myös tyhjentää input textfieldin.
-  def sendMessage = {
+  def sendMessage() = {
     val newInput = this.input.text
     if (newInput.nonEmpty) {
       this.input.text = ""
@@ -113,13 +113,13 @@ object BotGUI extends SimpleSwingApplication {
 
   this.reactions += {
     case keyEvent: KeyPressed =>
-      if (keyEvent.source == this.input && keyEvent.key == Key.Enter) sendMessage
+      if (keyEvent.source == this.input && keyEvent.key == Key.Enter) sendMessage()
     case mouseEvent: MouseClicked =>
       if (mouseEvent.source == this.input) {
         input.text = ""
         this.deafTo(input.mouse.clicks)
       }
-    case buttonClick: ButtonClicked => sendMessage
+    case buttonClick: ButtonClicked => sendMessage()
 
   }
 

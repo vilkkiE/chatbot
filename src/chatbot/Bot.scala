@@ -46,9 +46,9 @@ class Bot {
   // aiemmista vastauksista.
   def findResponse: String = {
 
-    handleEmptyAndRepetitionInput
+    handleEmptyAndRepetitionInput()
 
-    val database = this.getClass().getClassLoader().getResourceAsStream("database.txt")
+    val database = this.getClass.getClassLoader.getResourceAsStream("database.txt")
     val reader = new InputStreamReader(database, "UTF-8")
     val lineReader = new BufferedReader(reader)
 
@@ -66,11 +66,11 @@ class Bot {
               lastKeyWord = removeUnderscores(currentLine).drop(1)
               while (currentLine.head != 'R') {
                 // Tarkistaa onko keyword kontekstin vaativa, ja onko oikea aihe vielä löytynyt botin vastauksista.
-                if (currentLine.head == 'C' && correctSubject == false) {
+                if (currentLine.head == 'C' && !correctSubject) {
                   contextKeyWord = true
                   // Jos botin parissa viime vastauksessa on avainsanaan liittyvä konteksti, merkataan että
                   // konteksti on oikea.
-                  if ((previousBotResponse.contains(currentLine.drop(1)) || botResponse.contains(currentLine.drop(1)))) {
+                  if (previousBotResponse.contains(currentLine.drop(1)) || botResponse.contains(currentLine.drop(1))) {
                     correctSubject = true
                   }
                 }
@@ -123,7 +123,7 @@ class Bot {
     // esimerkiksi "well gagga" ja sanoi nyt "gagga". Nyt bot osaa tunnistaa toiston.
     // Tässä on riskinsä, mutta se on tietoinen valinta, ja tämä tilanne syntyy vain silloin, jos
     // botilla ei ole muuta vastausta.
-    if (responses.size == 0) {
+    if (responses.isEmpty) {
       if ((secondPreviousUserInput.contains(userInput) || previousUserInput.contains(userInput)) && userInput != " BOT DOESN'T UNDERSTAND ") {
         updateUserInput(" REPETITION ")
       } else {
@@ -139,7 +139,7 @@ class Bot {
     allResponses += botResponse
 
     if (botResponse.contains("*")) {
-      fillBotResponse
+      fillBotResponse()
     }
 
     formatResponse
@@ -150,14 +150,14 @@ class Bot {
     secondPreviousUserInput = previousUserInput
     previousUserInput = userInput
     userInput = line
-    processInput
+    processInput()
   }
 
   // Jos botin antama vastaus sisältää * merkin, se pitää täydentää käyttäjän antamalla lauseen osalla.
-  private def fillBotResponse = {
+  private def fillBotResponse() = {
     val responseArray = userInput.split(lastKeyWord)
     val botResponseArray = botResponse.split('*')
-    if (botResponseArray.size > 1) {
+    if (botResponseArray.length > 1) {
       botResponse = botResponseArray(0).trim + " " + transpose(responseArray(1)) + botResponseArray(1)
     } else {
       botResponse = botResponseArray(0).trim + " " + transpose(responseArray(1)) + "."
@@ -183,7 +183,7 @@ class Bot {
 
   // Seuraa onko käyttäjän antama input tyhjä tai sama kuin edellisellä tai sitä edellisellä kerralla.
   // Jos on niin vaihtaa inputin repetitioniksi, jolloin bot osaa antaa oikeanlaisen vastauksen.
-  private def handleEmptyAndRepetitionInput = {
+  private def handleEmptyAndRepetitionInput() = {
     if (userInput.split(" ").isEmpty) {
       updateUserInput(" NULL INPUT ")
     } else if (noFillerUserInput == noFillerWords(previousUserInput) && userInput != " BOT DOESN'T UNDERSTAND ") {
@@ -200,11 +200,11 @@ class Bot {
   // Formatoi botin lopullisen vastauksen oikeaan muotoon. Toisin sanoen laittaa isot alkukirjaimet lauseille ja "I":sanoille.
   private def formatResponse = {
     var response = ""
-    for (index <- 0 until botResponse.size) {
+    for (index <- 0 until botResponse.length) {
       if (index >= 2) {
         if (botResponse(index - 2) == '.' || botResponse(index - 2) == '!' || botResponse(index - 2) == '?') {
           response += botResponse(index).toString.toUpperCase
-        } else if (index < botResponse.size - 2 && botResponse(index).toString.toLowerCase == "i" &&
+        } else if (index < botResponse.length - 2 && botResponse(index).toString.toLowerCase == "i" &&
           botResponse(index - 1) == ' ' && (botResponse(index + 1) == ' ' || botResponse(index + 1) == ''')) {
           response += botResponse(index).toString.toUpperCase
         } else {
@@ -241,14 +241,14 @@ class Bot {
   def underscoreConditions(databaseLine: String): Boolean = {
     if (databaseLine.contains("_")) {
       val splittedInput = noFillerUserInput.split(removeUnderscores(databaseLine).drop(1))
-      ((databaseLine.drop(1).head == '_' && databaseLine.last == '_' && noFillerUserInput == " " + removeUnderscores(databaseLine).drop(1) + " ") ||
+      (databaseLine.drop(1).head == '_' && databaseLine.last == '_' && noFillerUserInput == " " + removeUnderscores(databaseLine).drop(1) + " ") ||
         (databaseLine.last != '_' && databaseLine.drop(1).head == '_' && splittedInput(splittedInput.size - 1).length >= ((noFillerUserInput.length / 2) - removeUnderscores(databaseLine).drop(1).length) && noFillerUserInput != " " + removeUnderscores(databaseLine).drop(1) + " ") ||
-        (databaseLine.drop(1).head != '_' && noFillerUserInput != " " + removeUnderscores(databaseLine).drop(1) + " " && databaseLine.takeRight(1) == "_" && splittedInput(0).length > ((noFillerUserInput.length / 2 - removeUnderscores(databaseLine).drop(1).length))))
+        (databaseLine.drop(1).head != '_' && noFillerUserInput != " " + removeUnderscores(databaseLine).drop(1) + " " && databaseLine.takeRight(1) == "_" && splittedInput(0).length > (noFillerUserInput.length / 2 - removeUnderscores(databaseLine).drop(1).length))
     } else false
   }
 
   // Laittaa käyttäjän inputin aina samaan muotoon. Poistaa pisteet ja huutomerkit ja laittaa muotoon " INPUT ".
-  def processInput = {
+  def processInput() = {
     userInput = removeComma(userInput)
     if (userInput.trim.takeRight(1) == "." || userInput.trim.takeRight(1) == "!" || userInput.trim.takeRight(1) == "?") {
       userInput = " " + userInput.trim.dropRight(1).trim.toUpperCase() + " "
