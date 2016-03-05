@@ -103,10 +103,10 @@ object BotGUI extends SimpleSwingApplication {
       this.chatBot.updateUserInput(newInput)
       if (output.text.isEmpty) {
         output.text = "Me: " + newInput
-        output.text += "\nChatbot: " + chatBot.findResponse
+        output.text += "\nChatbot: " + chatBot.respond
       } else {
         output.text = output.text + "\nMe: " + newInput
-        output.text += "\nChatbot: " + chatBot.findResponse
+        output.text += "\nChatbot: " + chatBot.respond
       }
     }
   }

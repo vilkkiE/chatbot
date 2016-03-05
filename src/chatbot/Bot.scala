@@ -44,10 +44,54 @@ class Bot {
   // Botin "pää"funktio. Etsii databasesta sisältääkö käyttäjän antama input avainsanaa, 
   // ja jos sisältää, valitsee siihen liittyvän sopivan vastauksen. Pitää myös kirjaa
   // aiemmista vastauksista.
-  def findResponse: String = {
+  def respond: String = {
 
     handleEmptyAndRepetitionInput()
 
+    val responses = findResponses()
+
+    // Jos käyttäjä antoi kontekstin vaativan inputin ilman, että siitä puhuttiin, etsitään sopiva vastaus
+    // " WRONG SUBJECT ":lle.
+    if (contextKeyWord && !correctSubject) {
+      updateUserInput(" WRONG SUBJECT ")
+      contextKeyWord = false
+      respond
+    }
+
+    // Resetoi context tilanteen
+    contextKeyWord = false
+    correctSubject = false
+
+    // Jos ei löydy vastauksia, katsotaan sisältääkö pari aiempaa inputtia nykyisen inputin.
+    // Jos sisältää, vaihetaan input REPETITION:ksi ja etsitään sillä sopiva vastaus. Ainoastaan
+    // muuten laitetaan BOT DOESN'T UNDERSTAND. Tämä sen takia, että käyttäjä on saattanut aiemmin sanoa
+    // esimerkiksi "well gagga" ja sanoi nyt "gagga". Nyt bot osaa tunnistaa toiston.
+    // Tässä on riskinsä, mutta se on tietoinen valinta, ja tämä tilanne syntyy vain silloin, jos
+    // botilla ei ole muuta vastausta.
+    if (responses.isEmpty) {
+      if ((secondPreviousUserInput.contains(userInput) || previousUserInput.contains(userInput)) && userInput != " BOT DOESN'T UNDERSTAND ") {
+        updateUserInput(" REPETITION ")
+      } else {
+        updateUserInput(" BOT DOESN'T UNDERSTAND ")
+      }
+      respond
+    }
+
+    // Pitää kirjaa vain 30:stä viimeisestä vastauksesta
+    if (allResponses.size == 30) {
+      allResponses = allResponses.drop(1)
+    }
+    allResponses += botResponse
+
+    if (botResponse.contains("*")) {
+      fillBotResponse()
+    }
+
+    formatResponse
+  }
+
+  // Etsii kaikki sopivat vastausvaihtoehdot
+  def findResponses() = {
     val database = this.getClass.getClassLoader.getResourceAsStream("database.txt")
     val reader = new InputStreamReader(database, "UTF-8")
     val lineReader = new BufferedReader(reader)
@@ -104,45 +148,7 @@ class Bot {
       lineReader.close()
       reader.close()
     }
-
-    // Jos käyttäjä antoi kontekstin vaativan inputin ilman, että siitä puhuttiin, etsitään sopiva vastaus
-    // " WRONG SUBJECT ":lle.
-    if (contextKeyWord && !correctSubject) {
-      updateUserInput(" WRONG SUBJECT ")
-      contextKeyWord = false
-      findResponse
-    }
-
-    // Resetoi context tilanteen
-    contextKeyWord = false
-    correctSubject = false
-
-    // Jos ei löydy vastauksia, katsotaan sisältääkö pari aiempaa inputtia nykyisen inputin.
-    // Jos sisältää, vaihetaan input REPETITION:ksi ja etsitään sillä sopiva vastaus. Ainoastaan
-    // muuten laitetaan BOT DOESN'T UNDERSTAND. Tämä sen takia, että käyttäjä on saattanut aiemmin sanoa
-    // esimerkiksi "well gagga" ja sanoi nyt "gagga". Nyt bot osaa tunnistaa toiston.
-    // Tässä on riskinsä, mutta se on tietoinen valinta, ja tämä tilanne syntyy vain silloin, jos
-    // botilla ei ole muuta vastausta.
-    if (responses.isEmpty) {
-      if ((secondPreviousUserInput.contains(userInput) || previousUserInput.contains(userInput)) && userInput != " BOT DOESN'T UNDERSTAND ") {
-        updateUserInput(" REPETITION ")
-      } else {
-        updateUserInput(" BOT DOESN'T UNDERSTAND ")
-      }
-      findResponse
-    }
-
-    // Pitää kirjaa vain 30:stä viimeisestä vastauksesta
-    if (allResponses.size == 30) {
-      allResponses = allResponses.drop(1)
-    }
-    allResponses += botResponse
-
-    if (botResponse.contains("*")) {
-      fillBotResponse()
-    }
-
-    formatResponse
+    responses
   }
 
   // Päivittää uuden käyttäjän antaman inputin ja samalla päivittää aiemmat inputit.
@@ -219,7 +225,7 @@ class Bot {
 
   // Tarkastaa, että käyttäjän inputissa avainsanan/-fraasin molemmilla puolilla on välilyönti (ellei ole viiminen
   // tai ensimmäinen sana).
-  // Näin estetään tilanne, jossa findResponse ottaa avainsanaksi sanan/kirjaimet, jotka ovat keskellä/osana
+  // Näin estetään tilanne, jossa respond ottaa avainsanaksi sanan/kirjaimet, jotka ovat keskellä/osana
   // toista sanaa. False jos on osana toista sanaa, true muuten.
   def excludeMidWordKeyWord(databaseLine: String): Boolean = {
     val databaseIndex = noFillerUserInput.indexOf(removeUnderscores(databaseLine).drop(1))
